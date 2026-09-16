@@ -6,10 +6,11 @@ import { motion } from "framer-motion";
 // import fishvideo from "./photos/fishvideo.mp4";
 // Large videos are hosted on Cloudinary (too big for the repo).
 // Set these in your .env / Vercel env to your uploaded video URLs.
-const video1 = import.meta.env.VITE_HERO_VIDEO_URL || "";
+import video1 from "./photos/video4.mp4"; // Local fallback
+import video3 from "./photos/fishvideo.mp4";
 import video2 from "./photos/turtleVideo1.mp4"; // Local fallback
 // Side gallery: the small fishvideo ships in the repo; the larger one comes from Cloudinary.
-const sideVideos = [ video2].filter(Boolean);
+const sideVideos = [ video2 , video1].filter(Boolean);
 import { FaPlay } from "react-icons/fa";
 import logo from "./photos/logodesign.png";
 import r1 from "./photos/review.jpeg"
@@ -464,7 +465,7 @@ export default function Hero() {
     className="relative md:col-span-2 h-[400px] rounded-3xl overflow-hidden group"
   >
 <video
-  src={video1}
+  src={video3}
   autoPlay
   muted
   loop

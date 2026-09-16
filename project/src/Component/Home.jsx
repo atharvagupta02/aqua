@@ -26,6 +26,7 @@ import instagram1 from "./photos/instagram1.jpeg"
 import instagram2 from "./photos/instagram2.jpeg"
 import instagram3 from "./photos/instagram3.jpeg"
 import instagram4 from "./photos/instagram4.jpeg"
+import instagram5 from "./photos/instagram5.png";
 import fish2 from "./photos/fish2.jpeg"
 import setup from "./photos/setup.jpeg"
 import banner from "./photos/frontpage.jpeg"
@@ -35,6 +36,7 @@ import successStoryVideo from "./photos/review.mp4"
 import { FaStar } from "react-icons/fa";
 import { useState } from "react";
 import { FiPlus, FiMinus } from "react-icons/fi";
+
 function FaqItem({ faq, index, active, setActive }) {
   const isActive = active === index;
   
@@ -91,7 +93,7 @@ import {
 const reviews = [r1, r2, r3, r4, r5, r6, r7];
 const instagramPosts = [
   instagram1,
-  instagram2,
+  instagram5,
   fish2,
   instagram3,
   "https://images.unsplash.com/photo-1759222859663-4df7dbb9761b?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",

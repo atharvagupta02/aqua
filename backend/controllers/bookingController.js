@@ -1,10 +1,14 @@
 import express from 'express';
 import bookingModel from '../models/bookingModels.js';
+import validator from 'validator';
 import { sendAdminNotification } from '../utils/sendEmail.js';
+
+// Guest input goes into the admin email as HTML, so escape it.
+const esc = (v) => validator.escape(String(v ?? ''));
 
 const createBooking = async (req, res) => {
   try {
-    const userId = req.user?.id; // from authUser middleware
+    const userId = req.user?.id; // set by optionalAuth when logged in; undefined for guests
     const {
       plan,
       dateTime,
@@ -17,10 +21,11 @@ const createBooking = async (req, res) => {
       message,
     } = req.body || {};
 
-    if (!userId) {
+    // No login required, so name + phone are what let us contact the customer
+    if (!name?.trim() || !phone?.trim()) {
       return res
-        .status(401)
-        .json({ success: false, message: "Not authenticated" });
+        .status(400)
+        .json({ success: false, message: "Name and phone are required" });
     }
 
     if (!bookingType) {
@@ -30,7 +35,7 @@ const createBooking = async (req, res) => {
     }
 
     const newBooking = new bookingModel({
-      userId,
+      userId: userId || undefined,
       bookingType,
       plan,
       dateTime: dateTime || undefined,
@@ -50,15 +55,16 @@ const createBooking = async (req, res) => {
       await sendAdminNotification(
         `📅 New ${label} — ${name || "Customer"}`,
         `<h2>New ${label}</h2>
-         <p><strong>Type:</strong> ${bookingType}</p>
-         <p><strong>Name:</strong> ${name || "-"}</p>
-         <p><strong>Phone:</strong> ${phone || "-"}</p>
-         <p><strong>Email:</strong> ${email || "-"}</p>
-         ${plan ? `<p><strong>Plan:</strong> ${plan.title || JSON.stringify(plan)}</p>` : ""}
-         ${dateTime ? `<p><strong>Preferred:</strong> ${new Date(dateTime).toLocaleString()}</p>` : ""}
-         ${city ? `<p><strong>City:</strong> ${city}</p>` : ""}
-         ${location ? `<p><strong>Location:</strong> ${location}</p>` : ""}
-         ${message ? `<p><strong>Message:</strong> ${message}</p>` : ""}
+         <p><strong>Type:</strong> ${esc(bookingType)}</p>
+         <p><strong>Customer:</strong> ${userId ? "Logged-in user" : "Guest"}</p>
+         <p><strong>Name:</strong> ${esc(name) || "-"}</p>
+         <p><strong>Phone:</strong> ${esc(phone) || "-"}</p>
+         <p><strong>Email:</strong> ${esc(email) || "-"}</p>
+         ${plan ? `<p><strong>Plan:</strong> ${esc(plan.title || JSON.stringify(plan))}</p>` : ""}
+         ${dateTime ? `<p><strong>Preferred:</strong> ${esc(new Date(dateTime).toLocaleString())}</p>` : ""}
+         ${city ? `<p><strong>City:</strong> ${esc(city)}</p>` : ""}
+         ${location ? `<p><strong>Location:</strong> ${esc(location)}</p>` : ""}
+         ${message ? `<p><strong>Message:</strong> ${esc(message)}</p>` : ""}
          <p><em>${new Date().toLocaleString()}</em></p>`
       );
     } catch (mailErr) {

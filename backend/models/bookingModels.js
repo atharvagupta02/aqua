@@ -4,7 +4,7 @@ const bookingSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "user",
-    required: true,
+    required: false, // empty for guest bookings (no login needed)
   },
   bookingType: {
     type: String,

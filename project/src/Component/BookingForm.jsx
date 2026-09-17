@@ -1,7 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
 import { FaTimes } from "react-icons/fa";
 
 const API_URL = import.meta.env.VITE_APP_API_URL || "http://localhost:8080";
@@ -14,8 +13,6 @@ export default function BookingForm({
   defaultPlanTitle = "",
   onClose,
 }) {
-  const navigate = useNavigate();
-
   const storedUser = JSON.parse(localStorage.getItem("aqua_user") || "null");
 
   const [form, setForm] = useState({
@@ -36,11 +33,8 @@ export default function BookingForm({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Login is optional: guests can book; logged-in users get the booking linked to their account
     const token = localStorage.getItem("aqua_token");
-    if (!token) {
-      toast.error("Please log in to book");
-      return navigate("/login");
-    }
 
     if (!form.name || !form.phone || !form.dateTime || !form.city) {
       toast.error("Please fill name, phone, date/time and city");
@@ -66,7 +60,7 @@ export default function BookingForm({
           location: form.location,
           message: form.message,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
       );
 
       if (data.success) {

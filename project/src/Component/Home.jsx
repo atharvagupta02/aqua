@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FaArrowRight } from "react-icons/fa";
 import { FaInstagram } from "react-icons/fa";
@@ -6,11 +6,12 @@ import { motion } from "framer-motion";
 // import fishvideo from "./photos/fishvideo.mp4";
 // Large videos are hosted on Cloudinary (too big for the repo).
 // Set these in your .env / Vercel env to your uploaded video URLs.
-import video1 from "./photos/video4.mp4"; // Local fallback
-import video3 from "./photos/fishvideo.mp4";
-import video2 from "./photos/turtleVideo1.mp4"; // Local fallback
-// Side gallery: the small fishvideo ships in the repo; the larger one comes from Cloudinary.
-const sideVideos = [ video2 , video1].filter(Boolean);
+import video1 from "./photos/video1.mp4"; // Local fallback
+import video2 from "./photos/video2.mp4";
+import video3 from "./photos/video3.mp4"; // Local fallback
+import video4 from "./photos/video4.mp4";
+// Gallery: video1 is landscape, the rest are portrait (9:16).
+const portraitVideos = [video2, video3, video4];
 import { FaPlay } from "react-icons/fa";
 import logo from "./photos/logodesign.png";
 import r1 from "./photos/review.jpeg"
@@ -27,6 +28,7 @@ import instagram2 from "./photos/instagram2.jpeg"
 import instagram3 from "./photos/instagram3.jpeg"
 import instagram4 from "./photos/instagram4.jpeg"
 import instagram5 from "./photos/instagram5.png";
+import instagram6 from "./photos/instagram6.jpeg";
 import fish2 from "./photos/fish2.jpeg"
 import setup from "./photos/setup.jpeg"
 import banner from "./photos/frontpage.jpeg"
@@ -35,7 +37,33 @@ import successStoryimg from "./photos/fishreview.jpeg"
 import successStoryVideo from "./photos/review.mp4"
 import { FaStar } from "react-icons/fa";
 import { useState } from "react";
-import { FiPlus, FiMinus } from "react-icons/fi";
+import { FiPlus, FiMinus, FiX } from "react-icons/fi";
+
+function VideoTile({ src, className = "", onOpen }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(src)}
+      aria-label="Play video with sound"
+      className={`group relative overflow-hidden rounded-2xl bg-[#1F212E] ring-1 ring-black/5 shadow-sm hover:shadow-lg transition-shadow duration-300 ${className}`}
+    >
+      <video
+        src={src}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+      />
+
+      {/* Play hint, only on hover */}
+      <span className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-white/90 flex items-center justify-center opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition duration-300">
+        <FaPlay className="text-[#1F212E] text-xs ml-0.5" />
+      </span>
+    </button>
+  );
+}
 
 function FaqItem({ faq, index, active, setActive }) {
   const isActive = active === index;
@@ -96,7 +124,8 @@ const instagramPosts = [
   instagram5,
   fish2,
   instagram3,
-  "https://images.unsplash.com/photo-1759222859663-4df7dbb9761b?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  instagram6,
+
   instagram4,
 ];
 
@@ -157,6 +186,14 @@ const faqs = [
 export default function Hero() {
   const scrollRef = useRef();
   const [active, setActive] = useState(null);
+  const [activeVideo, setActiveVideo] = useState(null);
+
+  useEffect(() => {
+    if (!activeVideo) return;
+    const onKey = (e) => e.key === "Escape" && setActiveVideo(null);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [activeVideo]);
   return (
     <>
 <section className="w-full bg-[#e6f7f5]">
@@ -451,91 +488,65 @@ export default function Hero() {
 
 
     {/* GALLERY SECTION */}
-    <section className="w-full py-16 md:py-28 px-4 md:px-6 bg-[#FAFAF8]">
+    <section className="w-full py-16 md:py-24 px-4 md:px-6 bg-[#FAFAF8]">
 
 {/* HEADER */}
-<div className="max-w-6xl mx-auto mb-12">
-  <h2 className="text-3xl md:text-5xl font-semibold text-[#1F212E]">
-    Video Gallery
-  </h2>
-  <p className="text-gray-500 mt-2">
-    Real aquarium work & insights
+<div className="max-w-7xl mx-auto mb-8 md:mb-10 flex items-end justify-between gap-4">
+  <div>
+    <h2 className="text-3xl md:text-5xl font-semibold text-[#1F212E]">
+      Video Gallery
+    </h2>
+    <p className="text-gray-500 mt-2">
+      Real aquarium work & insights
+    </p>
+  </div>
+  <p className="hidden md:block text-sm text-gray-400">
+    Tap any video to watch with sound
   </p>
 </div>
 
-{/* GRID */}
-<div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-6">
+{/* GRID: column widths follow each video's aspect ratio so all tiles share one height */}
+<div className="max-w-7xl mx-auto grid gap-4 md:grid-cols-[1.793fr_0.5625fr_0.5625fr_0.5625fr]">
 
-  {/* BIG VIDEO */}
-  <motion.div
-    whileHover={{ scale: 1.02 }}
-    className="relative md:col-span-2 h-[400px] rounded-3xl overflow-hidden group"
-  >
-<video
-  src={video3}
-  autoPlay
-  muted
-  loop
-  playsInline
-  preload="auto"
-  className="w-full h-full object-cover"
-  onMouseEnter={(e) => e.currentTarget.play()}
-  onMouseLeave={(e) => {
-    e.currentTarget.pause();
-    e.currentTarget.currentTime = 0;
-  }}
-/>
+  <VideoTile src={video1} className="aspect-[832/464]" onOpen={setActiveVideo} />
 
-    {/* OVERLAY */}
-    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition"></div>
-
-    {/* PLAY ICON */}
-    <div className="absolute inset-0 flex items-center justify-center">
-      <div className="w-14 h-14 rounded-full bg-white/80 flex items-center justify-center">
-        <FaPlay className="text-[#1F212E]" />
-      </div>
-    </div>
-  </motion.div>
-
-  {/* SIDE VIDEOS */}
-  <div className="flex flex-col gap-6">
-
-    {sideVideos.map((vid, i) => (
-      <motion.div
+  {/* Mobile: swipeable row. Desktop: wrapper dissolves into the grid */}
+  <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory -mx-4 px-4 pb-1 md:contents">
+    {portraitVideos.map((vid, i) => (
+      <VideoTile
         key={i}
-        whileHover={{ scale: 1.02 }}
-        className="relative h-[190px] rounded-2xl overflow-hidden group"
-      >
-<video
-  src={vid}
-  autoPlay
-  muted
-  loop
-  playsInline
-  preload="auto"
-  className="w-full h-full object-cover"
-  onMouseEnter={(e) => e.currentTarget.play()}
-  onMouseLeave={(e) => {
-    e.currentTarget.pause();
-    e.currentTarget.currentTime = 0;
-  }}
-/>
-
-        {/* OVERLAY */}
-        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition"></div>
-
-        {/* PLAY ICON */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center">
-            <FaPlay className="text-[#1F212E] text-sm" />
-          </div>
-        </div>
-      </motion.div>
+        src={vid}
+        className="aspect-[9/16] w-[44%] shrink-0 snap-start md:w-auto"
+        onOpen={setActiveVideo}
+      />
     ))}
-
   </div>
 
 </div>
+
+{/* LIGHTBOX */}
+{activeVideo && (
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
+    onClick={() => setActiveVideo(null)}
+  >
+    <button
+      aria-label="Close video"
+      className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 text-white hover:bg-white/20 transition flex items-center justify-center"
+      onClick={() => setActiveVideo(null)}
+    >
+      <FiX className="text-xl" />
+    </button>
+    <video
+      src={activeVideo}
+      controls
+      autoPlay
+      playsInline
+      className="max-h-[85vh] max-w-full rounded-2xl"
+      onClick={(e) => e.stopPropagation()}
+    />
+  </div>
+)}
 
 </section>
 

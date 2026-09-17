@@ -95,6 +95,7 @@ const steps = [
         "Diet & Maintenance Plan",
         "12-Month Follow-Up Support",
       ],
+      premium: true,
     },
   ];
   const points = [
@@ -447,6 +448,8 @@ export default function Consultation() {
           ${
             plan.highlight
               ? "bg-[#1F212E] text-white border-none scale-105"
+              : plan.premium
+              ? "bg-white border-2 border-[#D4AF37] shadow-[0_8px_30px_rgba(212,175,55,0.18)]"
               : "bg-white border-gray-200"
           }`}
       >
